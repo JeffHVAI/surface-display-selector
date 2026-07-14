@@ -184,15 +184,60 @@ ul.plain li{margin:4px 0}
           <option value="denseui" selected>Dense UI (text, controls)</option>
           <option value="interactive">Interactive UI (touch / gesture)</option>
         </select></div>
-      <div><label for="vsize">Diagonal / Vertical size (m)</label><input id="vsize" type="number" step="0.05" min="0.1" oninput="unpackVSize()"></div>
+      <div>
+        <label for="vsize">Diagonal / Vertical size</label>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <input id="vsize" type="number" step="0.05" min="0.01" oninput="unpackVSize()">
+          <select id="vsize_unit" data-prev="m" onchange="onUnitChange('vsize', this)" style="width: 72px; flex-shrink: 0; padding: 10px 4px;">
+            <option value="m" selected>m</option>
+            <option value="mm">mm</option>
+            <option value="in">in</option>
+            <option value="ft">ft</option>
+          </select>
+        </div>
+      </div>
       <div><label for="orient">Orientation (16:9)</label>
         <select id="orient" onchange="unpackVSize()">
           <option value="landscape" selected>Landscape</option>
           <option value="portrait">Portrait</option>
         </select></div>
-      <div><label for="w">Image width (m)</label><input id="w" type="number" step="0.05" min="0.2" value="1.6" oninput="packVSize(); calc()"></div>
-      <div><label for="h">Image height (m)</label><input id="h" type="number" step="0.05" min="0.1" value="0.9" oninput="packVSize(); calc()"></div>
-      <div><label for="dist">Closest viewing distance (m)</label><input id="dist" type="number" step="0.1" min="0.3" value="1.0" oninput="calc()"><div class="hint">Arm's length ≈ 0.6 m for touch/gesture UI</div></div>
+      <div>
+        <label for="w">Image width</label>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <input id="w" type="number" step="0.05" min="0.01" value="1.6" oninput="packVSize(); calc()">
+          <select id="w_unit" data-prev="m" onchange="onUnitChange('w', this)" style="width: 72px; flex-shrink: 0; padding: 10px 4px;">
+            <option value="m" selected>m</option>
+            <option value="mm">mm</option>
+            <option value="in">in</option>
+            <option value="ft">ft</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label for="h">Image height</label>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <input id="h" type="number" step="0.05" min="0.01" value="0.9" oninput="packVSize(); calc()">
+          <select id="h_unit" data-prev="m" onchange="onUnitChange('h', this)" style="width: 72px; flex-shrink: 0; padding: 10px 4px;">
+            <option value="m" selected>m</option>
+            <option value="mm">mm</option>
+            <option value="in">in</option>
+            <option value="ft">ft</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label for="dist">Closest viewing distance</label>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <input id="dist" type="number" step="0.1" min="0.01" value="1.0" oninput="calc()">
+          <select id="dist_unit" data-prev="m" onchange="onUnitChange('dist', this)" style="width: 72px; flex-shrink: 0; padding: 10px 4px;">
+            <option value="m" selected>m</option>
+            <option value="mm">mm</option>
+            <option value="in">in</option>
+            <option value="ft">ft</option>
+          </select>
+        </div>
+        <div class="hint">Arm's length ≈ 24 in / 0.6 m</div>
+      </div>
     </div>
   </fieldset>
 
@@ -236,7 +281,18 @@ ul.plain li{margin:4px 0}
 
   <fieldset><legend>Geometry &amp; occlusion</legend>
     <div class="grid">
-      <div><label for="throw">Best available throw distance (m)</label><input id="throw" type="number" step="0.1" min="0.05" value="2.4" oninput="calc()"></div>
+      <div>
+        <label for="throw">Best available throw distance</label>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <input id="throw" type="number" step="0.1" min="0.01" value="2.4" oninput="calc()">
+          <select id="throw_unit" data-prev="m" onchange="onUnitChange('throw', this)" style="width: 72px; flex-shrink: 0; padding: 10px 4px;">
+            <option value="m" selected>m</option>
+            <option value="mm">mm</option>
+            <option value="in">in</option>
+            <option value="ft">ft</option>
+          </select>
+        </div>
+      </div>
       <div><label for="ortho">Projector can sit square to surface?</label>
         <select id="ortho" onchange="calc()"><option value="yes" selected>Yes / within lens-shift range</option><option value="no">No — must be skewed</option></select></div>
       <div><label for="rear">Rear projection possible?</label>
@@ -321,31 +377,82 @@ function showTab(i,btn){
 const $=id=>document.getElementById(id);
 const fmt=n=>n>=1000?(Math.round(n/100)*100).toLocaleString():Math.round(n);
 
+function toMeters(value, unit) {
+  if (unit === 'm') return value;
+  if (unit === 'mm') return value / 1000;
+  if (unit === 'in') return value * 0.0254;
+  if (unit === 'ft') return value * 0.3048;
+  return value;
+}
+
+function fromMeters(valueInMeters, unit) {
+  if (unit === 'm') return valueInMeters;
+  if (unit === 'mm') return valueInMeters * 1000;
+  if (unit === 'in') return valueInMeters / 0.0254;
+  if (unit === 'ft') return valueInMeters / 0.3048;
+  return valueInMeters;
+}
+
+function onUnitChange(inputId, selectEl) {
+  const prevUnit = selectEl.getAttribute('data-prev') || 'm';
+  const newUnit = selectEl.value;
+  selectEl.setAttribute('data-prev', newUnit);
+
+  const input = $(inputId);
+  let val = +input.value || 0;
+  if (val > 0) {
+    const valInMeters = toMeters(val, prevUnit);
+    const convertedVal = fromMeters(valInMeters, newUnit);
+    input.value = Number(convertedVal.toFixed(3));
+  }
+
+  if (inputId === 'w' || inputId === 'h') {
+    packVSize();
+  }
+  if (inputId === 'vsize') {
+    unpackVSize();
+  }
+  calc();
+}
+
 function unpackVSize(){
   const vsize=+$('vsize').value;
   if(!vsize||vsize<=0)return;
   const orient=$('orient').value;
   const factor=Math.sqrt(337);
-  let w,h;
+  const vsizeUnit=$('vsize_unit').value;
+  const wUnit=$('w_unit').value;
+  const hUnit=$('h_unit').value;
+
+  const vsizeInMeters=toMeters(vsize, vsizeUnit);
+  let wInMeters, hInMeters;
   if(orient==='landscape'){
-    w=vsize*16/factor;
-    h=vsize*9/factor;
+    wInMeters=vsizeInMeters*16/factor;
+    hInMeters=vsizeInMeters*9/factor;
   }else{
-    w=vsize*9/factor;
-    h=vsize*16/factor;
+    wInMeters=vsizeInMeters*9/factor;
+    hInMeters=vsizeInMeters*16/factor;
   }
-  $('w').value=w.toFixed(3);
-  $('h').value=h.toFixed(3);
+
+  $('w').value=fromMeters(wInMeters, wUnit).toFixed(3);
+  $('h').value=fromMeters(hInMeters, hUnit).toFixed(3);
   calc();
 }
 
 function packVSize(){
   const w=+$('w').value||0;
   const h=+$('h').value||0;
-  if(w>0&&h>0){
-    const vsize=Math.sqrt(w*w+h*h);
-    $('vsize').value=vsize.toFixed(3);
-    $('orient').value=(w>=h)?'landscape':'portrait';
+  const wUnit=$('w_unit').value;
+  const hUnit=$('h_unit').value;
+  const vsizeUnit=$('vsize_unit').value;
+
+  const wInMeters=toMeters(w, wUnit);
+  const hInMeters=toMeters(h, hUnit);
+
+  if(wInMeters>0&&hInMeters>0){
+    const vsizeInMeters=Math.sqrt(wInMeters*wInMeters+hInMeters*hInMeters);
+    $('vsize').value=fromMeters(vsizeInMeters, vsizeUnit).toFixed(3);
+    $('orient').value=(wInMeters>=hInMeters)?'landscape':'portrait';
   }
 }
 
@@ -354,12 +461,15 @@ let lastReport='';
 function calc(){
   // ---- gather ----
   const content=$('content').value;
-  const W=+$('w').value||1, H=+$('h').value||0.6, A=W*H;
-  const D=+$('dist').value||1;
+  const W=toMeters(+$('w').value||1, $('w_unit').value);
+  const H=toMeters(+$('h').value||0.6, $('h_unit').value);
+  const A=W*H;
+  const D=toMeters(+$('dist').value||1, $('dist_unit').value);
   const E=Math.max(+$('lux').value||0,1);
   const ctrl=$('ctrl').value;
   const surf=$('surf').value, rho=+$('rho').value, finish=$('finish').value;
-  const T=+$('throw').value||1, ortho=$('ortho').value, rear=$('rear').value, occ=$('occ').value;
+  const T=toMeters(+$('throw').value||1, $('throw_unit').value);
+  const ortho=$('ortho').value, rear=$('rear').value, occ=$('occ').value;
   const duty=+$('duty').value||0, dust=$('dust').value, perm=$('perm').value, noise=$('noise').value;
   const diag=Math.sqrt(W*W+H*H);
   const isUI=(content==='denseui'||content==='interactive');
@@ -415,7 +525,7 @@ function calc(){
   else if(reqPx<=2560)resRec='WQHD/4K';
   else if(reqPx<=3840)resRec='4K UHD';
   else resRec='4K insufficient — edge-blend multi-unit or reduce image width';
-  fire(`Resolution: ≥${fmt(reqPx)} px horizontal → ${resRec}`,`Pixel ≤ ${(pxLimit*1000).toFixed(2)} mm at ${D} m viewing (${isUI?'1 arcmin, UI':'2 arcmin, video/signage'})`);
+  fire(`Resolution: ≥${fmt(reqPx)} px horizontal → ${resRec}`,`Pixel ≤ ${(pxLimit*1000).toFixed(2)} mm at ${$('dist').value} ${$('dist_unit').value} viewing (${isUI?'1 arcmin, UI':'2 arcmin, video/signage'})`);
 
   // ---- latency ----
   if(content==='interactive'){fire('Interactive → input lag ≤ 20 ms','Projector display lag is one segment of the total gesture-to-photon budget; require a measured “game mode” ≤ 20 ms.');}
@@ -448,11 +558,11 @@ function calc(){
       primary='alt';
       if(isUI){
         primaryTitle='Transparent display is a poor UI medium here — reconsider';
-        primaryWhy='Adhesive LED film pitch (≥P4, typically P6–P10) cannot render dense UI at '+D+' m; transparent OLED is dim for '+E+' lx. Honest options: mount a conventional panel on/behind the glass, or apply rear-pro film if rear access can be created.';
+        primaryWhy='Adhesive LED film pitch (≥P4, typically P6–P10) cannot render dense UI at '+$('dist').value+' '+$('dist_unit').value+'; transparent OLED is dim for '+E+' lx. Honest options: mount a conventional panel on/behind the glass, or apply rear-pro film if rear access can be created.';
       } else {
         const pitchRec=Math.max(2,Math.min(20,Math.round(D)));
         primaryTitle='Transparent LED film (adhesive), ~P'+pitchRec;
-        primaryWhy='Glass-native, daylight-bright (2,000–5,000+ nits), keeps transparency. Rule of thumb: pitch in mm ≈ minimum viewing distance in m → P'+pitchRec+' for '+D+' m. Content must be bold/high-contrast; note film is non-reusable once removed.';
+        primaryWhy='Glass-native, daylight-bright (2,000–5,000+ nits), keeps transparency. Rule of thumb: pitch in mm ≈ minimum viewing distance in m → P'+pitchRec+' for '+$('dist').value+' '+$('dist_unit').value+'. Content must be bold/high-contrast; note film is non-reusable once removed.';
       }
     }
   }
@@ -464,7 +574,7 @@ function calc(){
     primary='alt';
     primaryTitle=diag<=2.4?'Commercial LCD panel ('+Math.round(diag/0.0254)+'″ class)':'Fine-pitch direct-view LED wall';
     primaryWhy=diag<=2.4
-      ?'At '+diag.toFixed(2)+' m diagonal a commercial 500–700 nit panel beats any projector on contrast in '+E+' lx ambient, at a fraction of the cost, with zero optical-path maintenance.'
+      ?'At '+$('vsize').value+' '+$('vsize_unit').value+' diagonal a commercial 500–700 nit panel beats any projector on contrast in '+E+' lx ambient, at a fraction of the cost, with zero optical-path maintenance.'
       :'Image exceeds single-panel sizes; modular LED tiles deliver emissive brightness immune to ambient light. Pitch ≈ viewing distance rule: ~P'+Math.max(1,Math.round(D))+'.';
   }
 
@@ -480,7 +590,7 @@ function calc(){
   // Panel-competitive advisory (not a veto)
   if(primary==='projector' && diag<=2.2 && perm==='fixed' && E>300 && (surf==='wall'||surf==='counter')){
     fire('Value check: a commercial LCD panel is likely cheaper and better here',
-      diag.toFixed(2)+' m diagonal fits standard panel sizes; at '+E+' lx a 500-nit panel outperforms a '+fmt(lumSpec)+' lm projector on contrast with no maintenance. Choose projection only if surface-flexibility or footprint genuinely requires it.');
+      $('vsize').value+' '+$('vsize_unit').value+' diagonal fits standard panel sizes; at '+E+' lx a 500-nit panel outperforms a '+fmt(lumSpec)+' lm projector on contrast with no maintenance. Choose projection only if surface-flexibility or footprint genuinely requires it.');
   }
 
   // ALR advisory
@@ -512,8 +622,8 @@ function calc(){
     $('spectitle').textContent='Derived projector specification (minimums)';
     spec.innerHTML=
       cell('Brightness','≥ '+fmt(lumSpec)+' ANSI lm','Real ANSI/ISO rating only — ignore marketing “LED lumens”. Binding constraint: '+driver+'.')+
-      cell('Throw',(forceUST?'UST (TR < 0.4)':trClass),'Available throw '+T+' m for '+W+' m width'+(forceUST?' · forced by occlusion':''))+
-      cell('Resolution',resRec,fmt(reqPx)+' px horizontal minimum at '+D+' m viewing')+
+      cell('Throw',(forceUST?'UST (TR < 0.4)':trClass),'Available throw '+$('throw').value+' '+$('throw_unit').value+' for '+$('w').value+' '+$('w_unit').value+' width'+(forceUST?' · forced by occlusion':''))+
+      cell('Resolution',resRec,fmt(reqPx)+' px horizontal minimum at '+$('dist').value+' '+$('dist_unit').value+' viewing')+
       cell('Light source',src.split(',')[0],'Sealed optical path'+(dust!=='office'?' (dust class: '+dust+')':''))+
       cell('Optics',needShift?'Optical lens shift required':'Fixed lens acceptable',needShift?'Digital keystone disallowed for UI content':'Square mounting confirmed')+
       (content==='interactive'?cell('Input lag','≤ 20 ms','Measured, in the picture mode actually used'):'')+
@@ -522,7 +632,7 @@ function calc(){
     $('spectitle').textContent='Derived display requirement';
     spec.innerHTML=
       cell('Technology',primaryTitle.split('—')[0].split('(')[0].trim(),'')+
-      cell('Image area',W+' × '+H+' m ('+diag.toFixed(2)+' m diag)','')+
+      cell('Image area',$('w').value+' '+$('w_unit').value+' × '+$('h').value+' '+$('h_unit').value+' ('+$('vsize').value+' '+$('vsize_unit').value+' diag)','')+
       cell('Ambient to beat',E+' lx worst case','Controllability: '+ctrl)+
       (surf==='glass'&&!isUI&&rear==='no'?cell('Pixel pitch','≈ P'+Math.max(2,Math.min(20,Math.round(D))),'Pitch mm ≈ viewing distance m'):'')+
       cell('Equivalent projector demand',fmt(lumSpec)+' lm','Shown for reference — this is why projection was rejected');
@@ -545,8 +655,8 @@ function calc(){
       (needShift ? `<li><b>Features:</b> Check <code>Vert Lens Shift</code> and <code>Horiz Lens Shift</code> (disallow digital keystone for text/UI)</li>` : '') +
       (content === 'interactive' ? `<li><b>Features:</b> Check <code>Input Lag &lt; 30ms</code> (for interactive gesture/touch UI)</li>` : '') +
       (duty >= 12 ? `<li><b>Features:</b> Check <code>24/7 Duty Cycle</code> (matches high runtime requirements)</li>` : '') +
-      `<li><b>Throw Distance:</b> Enter <code>` + T_ft + ` feet</code> (metric: ` + T.toFixed(2) + ` m)</li>` +
-      `<li><b>Screen Size:</b> Enter <code>` + diag_in + ` inches</code> <b>Diagonal</b> (metric: ` + diag.toFixed(2) + ` m)</li>` +
+      `<li><b>Throw Distance:</b> Enter <code>` + T_ft + ` feet</code> (your input: ` + $('throw').value + ` ` + $('throw_unit').value + `)</li>` +
+      `<li><b>Screen Size:</b> Enter <code>` + diag_in + ` inches</code> <b>Diagonal</b> (your input: ` + $('vsize').value + ` ` + $('vsize_unit').value + `)</li>` +
       `<li><i>Note: All other fields on the form (such as Price, Zoom Range, Audio Power, Weight, or Connections) do not affect this visual spec and can be ignored/left default unless specifically constrained by site budgets or source inputs.</i></li>`;
     
     $('pc-fields-list').innerHTML = checklistHtml;
@@ -594,9 +704,9 @@ function calc(){
 
   // ---- text report ----
   lastReport='SURFACE DISPLAY SELECTOR — REPORT\n'+
-    'Content: '+content+' | Image: '+W+'x'+H+' m ('+A.toFixed(2)+' m2) | Min viewing: '+D+' m\n'+
+    'Content: '+content+' | Image: '+$('w').value+' '+$('w_unit').value+' x '+$('h').value+' '+$('h_unit').value+' ('+A.toFixed(2)+' m2) | Min viewing: '+$('dist').value+' '+$('dist_unit').value+'\n'+
     'Ambient: '+E+' lx worst-case ('+ctrl+') | Surface: '+surf+', rho='+rho+', '+finish+'\n'+
-    'Throw: '+T+' m (TR '+TR.toFixed(2)+') | Square: '+ortho+' | Rear: '+rear+' | Occlusion: '+occ+'\n'+
+    'Throw: '+$('throw').value+' '+$('throw_unit').value+' (TR '+TR.toFixed(2)+') | Square: '+ortho+' | Rear: '+rear+' | Occlusion: '+occ+'\n'+
     'Duty: '+duty+' h/d | Env: '+dust+' | '+perm+'\n\n'+
     'VERDICT: '+primaryTitle+'\n'+primaryWhy+'\n\n'+
     'Required real lumens (if projecting): '+fmt(lumSpec)+' ANSI lm ('+driver+')\n'+
