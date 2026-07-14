@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Surface Display Selector — Engineering User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chivo:wght@300;400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #111614;
+  --ink-soft: #2F3D37;
+  --line: #CBD3CA;
+  --photon: #965600;
+  --photon-soft: #FDF4E2;
+  --teal: #1A5C50;
+  --teal-soft: #E6F2EF;
+  --alert: #A62B17;
+  --alert-soft: #FAEBE9;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'Chivo', sans-serif;
+}
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  background: #ffffff;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-weight: 300;
+  line-height: 1.4;
+  font-size: 12px;
+}
+@page {
+  size: A4;
+  margin: 15mm;
+}
+.page {
+  padding: 15mm;
+  width: 210mm;
+  height: 297mm;
+  margin: 0 auto;
+  position: relative;
+  background: #ffffff;
+  border-bottom: 1px dashed var(--line);
+  page-break-after: always;
+  display: flex;
+  flex-direction: column;
+}
+@media print {
+  body {
+    background: #ffffff;
+  }
+  .page {
+    width: 100%;
+    height: 267mm; /* 297mm A4 height minus 30mm total page margins */
+    padding: 0;
+    margin: 0;
+    border-bottom: none;
+    page-break-after: always;
+  }
+  .page:last-child {
+    page-break-after: avoid;
+  }
+}
+
+/* Document styling */
+header {
+  border-bottom: 3px solid var(--ink);
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+.doc-meta {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: .08em;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  display: flex;
+  justify-content: space-between;
+}
+h1 {
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: -.02em;
+  margin-top: 4px;
+  line-height: 1.1;
+  color: var(--ink);
+}
+h1 span {
+  color: var(--photon);
+}
+h2 {
+  font-weight: 700;
+  font-size: 14px;
+  margin: 12px 0 6px;
+  letter-spacing: -.01em;
+  border-bottom: 1.5px solid var(--ink);
+  padding-bottom: 3px;
+  text-transform: uppercase;
+}
+h3 {
+  font-weight: 600;
+  font-size: 12.5px;
+  margin: 8px 0 4px;
+  color: var(--teal);
+}
+p {
+  margin-bottom: 6px;
+  text-align: justify;
+}
+.lead {
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--ink-soft);
+  margin-bottom: 12px;
+}
+ul, ol {
+  margin: 4px 0 10px 16px;
+}
+li {
+  margin-bottom: 3px;
+}
+code {
+  font-family: var(--mono);
+  font-size: 11px;
+  background: var(--photon-soft);
+  padding: 1px 4px;
+  border-radius: 3px;
+  color: #5a3c00;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 11px;
+}
+th, td {
+  border: 1px solid var(--line);
+  padding: 4px 6px;
+  text-align: left;
+}
+th {
+  background: #f0f2ee;
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 9.5px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.tip {
+  background: var(--teal-soft);
+  border-left: 4px solid var(--teal);
+  border-radius: 0 6px 6px 0;
+  padding: 6px 10px;
+  margin: 6px 0;
+  font-size: 11.5px;
+}
+.tip b {
+  font-weight: 600;
+  color: var(--teal);
+}
+.warn {
+  background: var(--alert-soft);
+  border-left: 4px solid var(--alert);
+  border-radius: 0 6px 6px 0;
+  padding: 6px 10px;
+  margin: 6px 0;
+  font-size: 11.5px;
+}
+.warn b {
+  font-weight: 600;
+  color: var(--alert);
+}
+
+/* Screenshot styling */
+.screenshot-container {
+  margin: 8px 0;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  text-align: center;
+  padding: 4px;
+}
+.screenshot-caption {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  color: var(--ink-soft);
+  background: #f9faf8;
+  padding: 4px;
+  border-top: 1.5px solid var(--line);
+  margin-top: 4px;
+}
+
+/* Formula callouts */
+.math-block {
+  background: #f9faf8;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin: 6px 0;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.math-block-title {
+  font-weight: bold;
+  color: var(--teal);
+  margin-bottom: 4px;
+}
+
+/* Footer text using flex placement */
+.footer-text {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  color: var(--ink-soft);
+  text-align: center;
+  margin-top: auto;
+  border-top: 1.5px solid var(--line);
+  padding-top: 6px;
+}
+</style>
+</head>
+<body>
+
+<!-- ================= PAGE 1: COVER PAGE ================= -->
+<div class="page" id="page-1">
+  <div class="doc-meta" style="margin-top: 20px;">
+    <span>Surface Display Engineering</span>
+    <span>Standard Operating Procedure</span>
+  </div>
+  <h2 class="title-hero" style="margin-top: 50px; font-size: 36px; font-weight: 900; line-height: 1.05; border-bottom: none; padding: 0;">Surface Display Selector <span>◐</span></h2>
+  <p class="title-subtitle" style="font-size: 15px; color: var(--ink-soft); margin-top: 10px; line-height: 1.4;">Site Survey Protocol, Data Entry, and Photometric Decision Engine User Guide</p>
+  
+  <div style="margin-top: 60px;">
+    <h3 style="color: var(--teal); font-weight: 600; font-size: 12.5px; margin-bottom: 8px;">Document Purpose</h3>
+    <p class="lead" style="font-size: 13.5px; font-weight: 400; color: var(--ink-soft); line-height: 1.5; text-align: justify;">
+      This document details the standardized field procedure for evaluating physical projection surfaces, measuring
+      ambient lighting conditions, and executing the Surface Display Selector decision engine. It outlines
+      mathematical formulas used to derive lumens, throws, and resolutions to ensure high-fidelity UI legibility.
+    </p>
+  </div>
+
+  <table class="metadata-table" style="margin-top: 60px; width: 100%; border-collapse: collapse; font-size: 11.5px;">
+    <thead>
+      <tr>
+        <th style="width: 25%">Document ID</th>
+        <th style="width: 25%">Revision</th>
+        <th style="width: 25%">Release Date</th>
+        <th style="width: 25%">Author</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>SOP-SDE-012</td>
+        <td>Rev A</td>
+        <td>July 2026</td>
+        <td>Display Systems Group</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="footer-text">SURFACE DISPLAY ENGINEERING · SOP-SDE-012 · PAGE 1</div>
+</div>
+
+<!-- ================= PAGE 2: INSTRUMENTS & PROCEDURES ================= -->
+<div class="page" id="page-2">
+  <header>
+    <div class="doc-meta"><span>Field Survey SOP-SDE-012</span><span>Rev A</span></div>
+    <h1>1. Instruments &amp; Survey Protocol</h1>
+  </header>
+
+  <p>
+    Executing an accurate physical site survey is the absolute prerequisite for successful projection design. Standard room
+    lighting and projection surface properties dictate whether projection will succeed or fail.
+  </p>
+
+  <h2>Instrument Kit</h2>
+  <p>Every surveyor must carry and utilize the standard survey kit:</p>
+  <ul>
+    <li><b>Lux Meter:</b> Any calibrated digital lux meter (±5% accuracy). <i>Smartphone lux meter apps are for triage only and are prone to ±30% sensor errors.</i></li>
+    <li><b>Laser Distance Meter:</b> Used for measuring throw distance, image height, image width, and viewing sightlines.</li>
+    <li><b>Flashlight:</b> For the surface specularity (gloss) test.</li>
+    <li><b>White A4 Paper Sheet:</b> Serving as a reference for reflectance comparison.</li>
+    <li><b>Camera:</b> Documenting context, mounting angles, and surrounding light sources.</li>
+  </ul>
+
+  <h2>Step-by-Step Procedure</h2>
+  <ol>
+    <li>
+      <b>S1: Define the Image and Viewer.</b> Mark the target display boundaries with low-tack tape. Measure the width (W) and height (H) in meters. Measure the closest viewing distance (D) — for interactive touch systems, this is typically arm's length (0.5m - 0.7m). Define the content class carefully (Video vs. Dense UI).
+    </li>
+    <li>
+      <b>S2: Measure Ambient Illuminance.</b> Place the lux meter dome flat against the wall, facing out toward the room (measuring light arriving at the surface). Take 5-point readings (4 corners + center). Capture readings under worst-case scenario (e.g., mid-day sun, blinds open, overhead lights full).
+    </li>
+    <li>
+      <b>S3: Characterise the Surface.</b> Hold the A4 white paper (approx. 0.85 reflectance) next to the wall. Estimate surface reflectance: white (0.85), light gray/beige (0.60), mid-tone (0.35), or dark/brick (0.15). Conduct the <i>specularity test</i> by shining the flashlight at a 45° angle to identify glare hotspots.
+    </li>
+  </ol>
+
+  <div class="screenshot-container">
+    <img src="tab1_survey.png" alt="Survey Protocol Screen" style="height: 180px; width: auto; max-width: 100%; display: inline-block; object-fit: contain;" />
+    <div class="screenshot-caption">Figure 1.1: Surface Display Selector - Step-by-Step Field Survey Protocol (Tab 1)</div>
+  </div>
+  <div class="footer-text">SURFACE DISPLAY ENGINEERING · SOP-SDE-012 · PAGE 2</div>
+</div>
+
+<!-- ================= PAGE 3: DATA ENTRY ================= -->
+<div class="page" id="page-3">
+  <header>
+    <div class="doc-meta"><span>Field Survey SOP-SDE-012</span><span>Rev A</span></div>
+    <h1>2. Input Sheet Parameters</h1>
+  </header>
+
+  <p>
+    The measured site parameters are entered directly into <b>Tab 2: Input Sheet</b>. These inputs drive the decision engine rules and calculate requirements in real-time.
+  </p>
+
+  <div class="screenshot-container">
+    <img src="tab2_input.png" alt="Input Sheet Screen" style="height: 180px; width: auto; max-width: 100%; display: inline-block; object-fit: contain;" />
+    <div class="screenshot-caption">Figure 2.1: Live Input Sheet displaying parameter fields and defaults (Tab 2)</div>
+  </div>
+
+  <h2>Parameters &amp; Guidelines</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%">Parameter</th>
+        <th style="width: 25%">Default Value</th>
+        <th style="width: 50%">Engineering Guidance</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>Content Class</b></td>
+        <td>Dense UI</td>
+        <td>Select 'Video' for moving imagery, 'Signage' for bold graphics, or 'Dense/Interactive UI' for text-heavy layouts and interactive targets.</td>
+      </tr>
+      <tr>
+        <td><b>Image Dimensions</b></td>
+        <td>1.6m × 0.9m</td>
+        <td>Physical dimensions of the projected area. W and H determine total area A.</td>
+      </tr>
+      <tr>
+        <td><b>Worst-Case Illuminance</b></td>
+        <td>400 lux</td>
+        <td>The maximum lux value recorded in the 5-point survey. Office environments typically range from 300 to 500 lx.</td>
+      </tr>
+      <tr>
+        <td><b>Surface Reflectance</b></td>
+        <td>White (0.85)</td>
+        <td>&rho; value. Lower reflectance absorbs more projected light, requiring a brighter projector.</td>
+      </tr>
+      <tr>
+        <td><b>Occlusion Risk</b></td>
+        <td>Yes</td>
+        <td>Set to 'Yes' if users will stand between the projector and wall. This triggers the mandatory UST (Ultra-Short-Throw) requirement.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="warn" style="margin-top: 4px; padding: 4px 8px;">
+    <b>Calibration Check:</b> If you record an ambient illuminance of 0 lux or &gt; 20,000 lux (unless in direct outdoors sun), check sensor calibration. Always multiply foot-candle readings by 10.76 to convert to lux.
+  </div>
+  <div class="footer-text">SURFACE DISPLAY ENGINEERING · SOP-SDE-012 · PAGE 3</div>
+</div>
+
+<!-- ================= PAGE 4: DECISION ENGINE STANDARD ================= -->
+<div class="page" id="page-4">
+  <header>
+    <div class="doc-meta"><span>Field Survey SOP-SDE-012</span><span>Rev A</span></div>
+    <h1>3. Decision Engine &amp; Photometrics</h1>
+  </header>
+
+  <p>
+    The decision engine processes inputs dynamically, evaluating two primary mathematical constraints to derive the necessary luminous flux (ANSI lumens) and display properties.
+  </p>
+
+  <div class="math-block">
+    <div class="math-block-title">Lumen Calculation Formulas:</div>
+    1. Contrast Path:     &Phi;<sub>contrast</sub> = (C<sub>target</sub> - 1) · E · A<br>
+    2. Absolute Path:     &Phi;<sub>absolute</sub> = L<sub>min</sub> · &pi; · A / &rho;<br>
+    3. Binding Lumen:     &Phi;<sub>on-screen</sub> = max(&Phi;<sub>contrast</sub>, &Phi;<sub>absolute</sub>)<br>
+    4. Spec Requirement:  &Phi;<sub>spec</sub> = &Phi;<sub>on-screen</sub> · 1.5   [Headroom: 1.25x real-vs-spec, 1.2x lamp aging]
+  </div>
+
+  <h2>Parameters for Content Classes:</h2>
+  <ul>
+    <li><b>Video:</b> C<sub>target</sub> = 8, L<sub>min</sub> = 100 nits</li>
+    <li><b>Signage:</b> C<sub>target</sub> = 6, L<sub>min</sub> = 200 nits</li>
+    <li><b>Dense UI / Interactive:</b> C<sub>target</sub> = 15, L<sub>min</sub> = 150 nits</li>
+  </ul>
+
+  <h2>Resolution Acuity limits:</h2>
+  <p>
+    Acuity limit p = D × 0.00029 (representing 1 arcminute of resolution at viewing distance D). For UI content, the system enforces a pixel size ≤ p. The minimum horizontal resolution is calculated as ceil(W / p).
+  </p>
+
+  <div class="screenshot-container">
+    <img src="tab3_decision.png" alt="Standard Decision Screen" style="height: 180px; width: auto; max-width: 100%; display: inline-block; object-fit: contain;" />
+    <div class="screenshot-caption">Figure 3.1: Standard Output Verdict, Specification, and Reasoning Trail (Tab 3)</div>
+  </div>
+
+  <div class="tip" style="margin-top: 4px; padding: 4px 8px;">
+    <b>Throw Ratio (TR):</b> Classifies optics based on T/W. Standard ranges: UST (&lt;0.4), Short-throw (0.4–1.0), Standard (1.0–2.1), and Long-throw (&gt;2.1).
+  </div>
+  <div class="footer-text">SURFACE DISPLAY ENGINEERING · SOP-SDE-012 · PAGE 4</div>
+</div>
+
+<!-- ================= PAGE 5: VETO LOGIC & ALTERNATIVES ================= -->
+<div class="page" id="page-5">
+  <header>
+    <div class="doc-meta"><span>Field Survey SOP-SDE-012</span><span>Rev A</span></div>
+    <h1>4. Veto Conditions &amp; Alternatives</h1>
+  </header>
+
+  <p>
+    Certain physical constraints make projection non-viable. The engine triggers vetoes under these conditions, highlighting them in red on the reasoning trail and advising alternative displays.
+  </p>
+
+  <h2>Veto Rules and Triggers</h2>
+  <ul>
+    <li><b>Daylight + UI:</b> Uncontrolled daylight with interactive UI forces alternative tech, as legibility cannot be guaranteed under variable sunlight.</li>
+    <li><b>Lumen Ceiling:</b> When calculated requirement exceeds 12,000 ANSI lumens. Large venue projection becomes economically and logistically impractical compared to direct-view emissive displays.</li>
+    <li><b>Glass without Rear Access:</b> Front projection fails on transparent glass because light passes straight through rather than diffusing.</li>
+  </ul>
+
+  <div class="screenshot-container">
+    <img src="tab3_decision_alternative.png" alt="Alternative Veto Decision Screen" style="height: 180px; width: auto; max-width: 100%; display: inline-block; object-fit: contain;" />
+    <div class="screenshot-caption">Figure 4.1: Veto verdict triggered by high ambient daylight conditions, recommending a Fine-pitch LED wall</div>
+  </div>
+
+  <h2>Alternative Technology Fits</h2>
+  <ul>
+    <li><b>Commercial LCD Panel:</b> Best fit when image diagonal is ≤ 2.4 meters. Offers much higher contrast, zero optical path maintenance, and better UI clarity in office lighting.</li>
+    <li><b>Fine-Pitch LED Wall:</b> Best fit when calculated lumens or image size exceed projection capabilities. Modular tiles are daylight-proof but demand structural support.</li>
+    <li><b>Transparent LED Film / Rear Projection Film:</b> Standard alternatives when glass surfaces are used. Rear film requires a rear cavity throw path.</li>
+  </ul>
+  <div class="footer-text">SURFACE DISPLAY ENGINEERING · SOP-SDE-012 · PAGE 5</div>
+</div>
+
+<!-- ================= PAGE 6: PROJECTORCENTRAL SOURCING ================= -->
+<div class="page" id="page-6">
+  <header>
+    <div class="doc-meta"><span>Field Survey SOP-SDE-012</span><span>Rev A</span></div>
+    <h1>5. Database Sourcing Guide</h1>
+  </header>
+
+  <p>
+    Once the decision engine recommends projection and defines the minimum specifications, use the search tools at 
+    <a href="https://www.projectorcentral.com/projectors.cfm" target="_blank">projectorcentral.com/projectors.cfm</a> to identify suitable projector models. Follow the mapping below to translate derived specs to search filters:
+  </p>
+
+  <h2>Field Selection &amp; Mapping</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 30%">ProjectorCentral Filter</th>
+        <th style="width: 70%">Derived Selector Specification Mapping</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>Resolution</b></td>
+        <td>Select the class matching or exceeding derived horizontal pixels (e.g. 1080p for &ge;1920 px, 4K UHD for &ge;3840 px).</td>
+      </tr>
+      <tr>
+        <td><b>Brightness</b></td>
+        <td>Select the lumen range bounding the derived <b>ANSI lumens</b> (e.g., 2000-4000). Ignore marketing "LED lumens" which are inflated.</td>
+      </tr>
+      <tr>
+        <td><b>Aspect Ratio</b></td>
+        <td>Select <b>16:9</b> (standard widescreen aspect ratio used in site calculations).</td>
+      </tr>
+      <tr>
+        <td><b>Lamp Type</b></td>
+        <td>Select <b>Laser</b> or <b>All Solid State</b> if the specification requires sealed DLP optics or a high daily runtime.</td>
+      </tr>
+      <tr>
+        <td><b>Type/Application</b></td>
+        <td>Select <b>Conference Room</b>, <b>Classroom</b>, or <b>Large Venue</b> based on the site's environment class.</td>
+      </tr>
+      <tr>
+        <td><b>Features (Checkboxes)</b></td>
+        <td>
+          <b>Ultra Short Throw:</b> Check if the derived specification indicates UST optics (e.g. to avoid occlusion).<br>
+          <b>Vert Lens Shift / Horiz Lens Shift:</b> Check if skewed mounting requires optical shift (essential to preserve UI text sharpness).<br>
+          <b>Input Lag &lt; 30ms:</b> Check if the content class is interactive UI.<br>
+          <b>24/7 Duty Cycle:</b> Check if daily runtime exceeds 12 hours.
+        </td>
+      </tr>
+      <tr>
+        <td><b>Throw Distance &amp; Screen Size</b></td>
+        <td>
+          Open this section to verify throw candidates. Convert metric values to Imperial before entering:<br>
+          • <b>Throw Distance:</b> Enter value in feet (meters &times; 3.28).<br>
+          • <b>Screen Size:</b> Enter value in inches Diagonal (diagonal meters &times; 39.37).
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="tip" style="margin-top: 10px; padding: 6px 10px;">
+    <b>Optional Fields:</b> Filters such as Price, Manufacturer, Noise Level, Zoom Range, Audio Power, Weight, or Connection Ports (HDMI/VGA) can be left default or ignored, as they do not affect the primary photometric viability, unless specific local site budget or source pipeline constraints apply.
+  </div>
+  <div class="footer-text">SURFACE DISPLAY ENGINEERING · SOP-SDE-012 · PAGE 6</div>
+</div>
+
+</body>
+</html>
