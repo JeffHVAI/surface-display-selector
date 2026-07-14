@@ -96,6 +96,8 @@ input:focus,select:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 
 .btn:hover{background:#14483E}
 .btn:active{transform:translateY(1px)}
 .btn:focus-visible{outline:3px solid var(--photon);outline-offset:2px}
+.btn-secondary{background:var(--line);color:var(--ink-soft);box-shadow:none;border:1px solid var(--line)}
+.btn-secondary:hover{background:#B8C1B7;color:var(--ink)}
 ul.plain{margin:8px 0 8px 20px}
 ul.plain li{margin:4px 0}
 @media (prefers-reduced-motion:no-preference){.tab.show{animation:fade .25s ease}}
@@ -361,7 +363,10 @@ ul.plain li{margin:4px 0}
   <h2>Technology fit comparison</h2>
   <div id="alts"></div>
 
-  <button class="btn" onclick="copyReport(this)">Copy report as text</button>
+  <div style="display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap;">
+    <button class="btn" onclick="copyReport(this)" style="margin-top: 0; flex: 1; min-width: 200px;">Copy report as text</button>
+    <button class="btn btn-secondary" onclick="copyAiPrompt(this)" style="margin-top: 0; flex: 1; min-width: 200px;">Copy AI search prompt</button>
+  </div>
   <p class="hint" style="margin-top:10px">Model notes: contrast = 1 + Φ/(E·A) for a diffuse surface (surface reflectance cancels in the ratio but sets the absolute-brightness floor). Contrast targets — video 8:1, signage 6:1, UI 15:1 vs ambient-reflected background — are engineering heuristics, not standards; adjust to taste. Headroom: ×1.25 spec-vs-real derating, ×1.2 source aging.</p>
 </section>
 </div>
@@ -456,7 +461,7 @@ function packVSize(){
   }
 }
 
-let lastReport='';
+let lastReport='', lastAiPrompt='';
 
 function calc(){
   // ---- gather ----
@@ -713,6 +718,40 @@ function calc(){
     'Resolution: '+resRec+' ('+fmt(reqPx)+' px horiz)\n\nREASONING:\n'+
     trail.map(x=>'- '+x.t+' — '+x.m).join('\n') +
     pcGuideText;
+
+  // ---- AI prompt ----
+  const wVal = $('w').value;
+  const wUnit = $('w_unit').value;
+  const hVal = $('h').value;
+  const hUnit = $('h_unit').value;
+  const vsizeVal = $('vsize').value;
+  const vsizeUnit = $('vsize_unit').value;
+  const distVal = $('dist').value;
+  const distUnit = $('dist_unit').value;
+  const throwVal = $('throw').value;
+  const throwUnit = $('throw_unit').value;
+
+  lastAiPrompt=
+    `Act as a commercial AV consultant. Suggest 3 to 5 real-world, active projector or display model numbers that satisfy the following site specifications:\n\n` +
+    `[DISPLAY REQUIREMENTS]\n` +
+    `- Primary Verdict: ${primaryTitle}\n` +
+    `- Rationale: ${primaryWhy}\n` +
+    `- Target Image Area: ${wVal} ${wUnit} width × ${hVal} ${hUnit} height (${vsizeVal} ${vsizeUnit} diagonal)\n` +
+    `- Minimum Required Brightness: ${fmt(lumSpec)} ANSI Lumens (calculated based on ${E} lux ambient light, surface reflectance of ${rho}, and a contrast target of ${Ctarget}:1)\n` +
+    `- Required Resolution Class: ${resRec} (minimum ${fmt(reqPx)} horizontal pixels based on ${distVal} ${distUnit} viewing distance)\n` +
+    `- Mounting Geometry: Best available throw distance is ${throwVal} ${throwUnit} (Required Throw Ratio: ${TR.toFixed(2)} [${trClass}])\n` +
+    `- Light Source Requirement: ${src} (Duty cycle: ${duty} hours/day, Environment: ${dust})\n` +
+    (content === 'interactive' ? `- Gesture/Touch Lag: Input lag ≤ 20 ms required\n` : '') +
+    (noise === 'yes' ? `- Acoustics: Low noise environment (prefer ≤ 28 dB)\n` : '') +
+    (needShift ? `- Optics: Optical lens shift required (disallow digital keystone for text legibility)\n` : '') +
+    `\n` +
+    `[OUTPUT INSTRUCTIONS]\n` +
+    `Provide the response as a markdown table listing:\n` +
+    `1. Manufacturer and Model Number\n` +
+    `2. Target Specifications (Brightness, Resolution, Throw Ratio, Light Source)\n` +
+    `3. Key Features matching our requirements (e.g. Lens Shift, IP5X sealing, UST lens, Low Lag mode)\n` +
+    `4. Rough Market Pricing / Availability class\n` +
+    `5. Specific match notes (why this model fits our site constraints)`;
 }
 
 function cell(k,v,s){return '<div><b>'+k+'</b><span>'+v+'</span>'+(s?'<small>'+s+'</small>':'')+'</div>';}
@@ -720,6 +759,12 @@ function cell(k,v,s){return '<div><b>'+k+'</b><span>'+v+'</span>'+(s?'<small>'+s
 function copyReport(b){
   navigator.clipboard.writeText(lastReport).then(()=>{
     b.textContent='Copied ✓';setTimeout(()=>b.textContent='Copy report as text',1600);
+  });
+}
+
+function copyAiPrompt(b){
+  navigator.clipboard.writeText(lastAiPrompt).then(()=>{
+    b.textContent='Copied ✓';setTimeout(()=>b.textContent='Copy AI search prompt',1600);
   });
 }
 packVSize();
