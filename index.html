@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Surface Display Selector — Site Survey &amp; Decision Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chivo:wght@300;400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4F6F2;
+  --card:#FFFFFF;
+  --ink:#111614;
+  --ink-soft:#2F3D37; /* Darker for high contrast body/labels text */
+  --line:#CBD3CA;     /* Darker line for better structure */
+  --photon:#965600;   /* Deeper gold/amber for high contrast text and outlines */
+  --photon-soft:#FDF4E2;
+  --teal:#1A5C50;     /* Deeper teal for buttons, headers, links */
+  --teal-soft:#E6F2EF;
+  --alert:#A62B17;    /* Deeper alert red for messages */
+  --alert-soft:#FAEBE9;
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'Chivo',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-weight:300;line-height:1.55;font-size:15px}
+.wrap{max-width:980px;margin:0 auto;padding:28px 20px 80px}
+header{border-bottom:3px solid var(--ink);padding-bottom:18px;margin-bottom:22px}
+.rev{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+h1{font-weight:900;font-size:clamp(22px,4vw,34px);letter-spacing:-.01em;margin-top:6px;line-height:1.1}
+h1 span{color:var(--photon)}
+.sub{color:var(--ink-soft);margin-top:8px;max-width:640px}
+nav{display:flex;gap:0;margin:26px 0 0;border:2px solid var(--ink);border-radius:8px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.05)}
+nav button{flex:1;padding:14px 10px;background:var(--card);border:none;font-family:var(--mono);font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;color:var(--ink-soft);border-right:2px solid var(--ink);transition:background-color 0.15s ease,color 0.15s ease}
+nav button:last-child{border-right:none}
+nav button:hover:not(.active){background:#EAECE7;color:var(--ink)}
+nav button.active{background:var(--ink);color:#FFFFFF;font-weight:600}
+nav button:focus-visible{outline:3px solid var(--photon);outline-offset:-3px}
+.tab{display:none;margin-top:26px}
+.tab.show{display:block}
+h2{font-weight:700;font-size:19px;margin:30px 0 10px;letter-spacing:-.01em}
+h2:first-child{margin-top:0}
+h3{font-weight:500;font-size:15px;margin:18px 0 6px}
+p{margin:8px 0;max-width:72ch}
+.step{border:1px solid #CBD3CA;border-left:4px solid var(--photon);background:var(--card);border-radius:8px;padding:18px 20px;margin:16px 0;box-shadow:0 4px 12px rgba(0,0,0,0.02)}
+.step h3{margin-top:0;display:flex;align-items:baseline;gap:10px}
+.step h3 .n{font-family:var(--mono);font-size:12px;color:var(--photon);font-weight:600}
+.kit{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:12px 0}
+.kit div{background:var(--card);border:1px solid #CBD3CA;border-radius:8px;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.01)}
+.kit b{font-weight:500;display:block;font-size:14px}
+.kit small{color:var(--ink-soft);font-size:12.5px;line-height:1.4;display:block;margin-top:4px}
+.tip{background:var(--teal-soft);border-radius:8px;padding:12px 16px;margin:12px 0;font-size:14px}
+.tip b{font-weight:500;color:var(--teal)}
+.warn{background:var(--alert-soft);border-radius:8px;padding:12px 16px;margin:12px 0;font-size:14px}
+.warn b{font-weight:500;color:var(--alert)}
+code{font-family:var(--mono);font-size:12.5px;background:var(--photon-soft);color:#6B4100;padding:1px 5px;border-radius:4px}
+/* input sheet */
+fieldset{border:1px solid #CBD3CA;background:var(--card);border-radius:8px;padding:20px;margin:20px 0;box-shadow:0 4px 12px rgba(0,0,0,0.03)}
+legend{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);padding:4px 12px;background:var(--card);border:1px solid #CBD3CA;border-radius:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px}
+label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:6px}
+input,select{width:100%;padding:10px 12px;font-family:var(--mono);font-size:14px;border:1.5px solid #9BA698;border-radius:6px;background:#FFFFFF;color:var(--ink);transition:border-color 0.15s ease,box-shadow 0.15s ease}
+input:focus,select:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-soft)}
+.hint{font-size:11.5px;color:var(--ink-soft);margin-top:3px;font-weight:300}
+/* results */
+.verdict{border:2px solid var(--ink);border-radius:12px;background:#FFFFFF;padding:24px;margin:12px 0 24px;box-shadow:0 6px 18px rgba(0,0,0,0.04)}
+.verdict .tag{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#FFFFFF;background:var(--ink);display:inline-block;padding:4px 10px;border-radius:20px}
+.verdict h2{margin:12px 0 6px;font-size:24px}
+.verdict .why{color:var(--ink-soft)}
+.gauge{margin:26px 0}
+.gauge .bar{position:relative;height:34px;border-radius:8px;overflow:hidden;display:flex;border:2px solid var(--ink)}
+.gauge .z{height:100%}
+.gauge .marker{position:absolute;top:-8px;bottom:-8px;width:3px;background:var(--ink);border-radius:2px}
+.gauge .marker::after{content:attr(data-l);position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:11px;font-weight:600;white-space:nowrap}
+.gauge .labels{display:flex;font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);margin-top:6px}
+.gauge .labels span{flex:1;text-align:center;font-weight:500}
+.spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:14px 0}
+.spec div{background:var(--card);border:1px solid #CBD3CA;border-radius:8px;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.02)}
+.spec b{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;margin-bottom:4px}
+.spec span{font-family:var(--mono);font-size:15px;font-weight:600}
+.spec small{display:block;font-size:12px;color:var(--ink-soft);margin-top:3px;font-weight:300}
+.trail{margin:10px 0}
+.trail li{list-style:none;border-left:3px solid var(--line);padding:7px 0 7px 14px;margin:0;font-size:14px}
+.trail li.fire{border-left-color:var(--photon)}
+.trail li.veto{border-left-color:var(--alert)}
+.trail li b{font-weight:500}
+.trail li .m{font-family:var(--mono);font-size:12px;color:var(--ink-soft);display:block;margin-top:2px}
+.alt{border:1px solid #CBD3CA;border-radius:8px;background:var(--card);padding:16px 18px;margin:12px 0;box-shadow:0 2px 8px rgba(0,0,0,0.01)}
+.alt h3{margin:0 0 6px;display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.alt .fit{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:20px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.fit.good{background:var(--teal-soft);color:var(--teal)}
+.fit.cond{background:var(--photon-soft);color:#875200}
+.fit.poor{background:var(--alert-soft);color:var(--alert)}
+.alt p{font-size:13.5px;color:var(--ink-soft);margin:4px 0 0}
+.btn{display:inline-block;margin-top:16px;padding:12px 24px;background:var(--teal);color:#FFFFFF;border:none;border-radius:6px;font-family:var(--mono);font-size:13.5px;font-weight:600;letter-spacing:.05em;cursor:pointer;transition:background-color 0.15s ease,transform 0.1s ease;box-shadow:0 2px 4px rgba(0,0,0,0.06)}
+.btn:hover{background:#14483E}
+.btn:active{transform:translateY(1px)}
+.btn:focus-visible{outline:3px solid var(--photon);outline-offset:2px}
+ul.plain{margin:8px 0 8px 20px}
+ul.plain li{margin:4px 0}
+@media (prefers-reduced-motion:no-preference){.tab.show{animation:fade .25s ease}}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media(max-width:560px){nav button{font-size:10.5px;padding:10px 4px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="rev"><span>Surface Display Engineering</span><span>Field Procedure · Rev A</span></div>
+  <h1>Surface Display Selector <span>◐</span></h1>
+  <p class="sub">A three-stage process: run the site survey, enter the measured data, and the decision engine derives the required display specification — or tells you projection is the wrong technology and why.</p>
+</header>
+
+<nav role="tablist">
+  <button class="active" onclick="showTab(0,this)">1 · Survey Protocol</button>
+  <button onclick="showTab(1,this)">2 · Input Sheet</button>
+  <button onclick="showTab(2,this)">3 · Decision</button>
+</nav>
+
+<!-- ============ TAB 1: SURVEY PROTOCOL ============ -->
+<section class="tab show" id="tab0">
+  <h2>Instrument kit</h2>
+  <div class="kit">
+    <div><b>Lux meter</b><small>Any ±5% illuminance meter (~$30–60, e.g. a basic digital lux meter). Phone apps are ±25–30% — acceptable for triage only; note which was used.</small></div>
+    <div><b>Laser distance meter</b><small>For throw distance and image dimensions. A tape measure works below ~5 m.</small></div>
+    <div><b>Flashlight (phone light)</b><small>Used for the specularity (gloss) test on the surface.</small></div>
+    <div><b>White paper, A4</b><small>Reference for judging surface reflectance by comparison.</small></div>
+    <div><b>Camera</b><small>Document surface, mounting positions, light sources, and sightlines. Shoot wide + detail.</small></div>
+    <div><b>This tool</b><small>Enter readings directly in Tab 2 while on site.</small></div>
+  </div>
+
+  <h2>Procedure</h2>
+
+  <div class="step">
+    <h3><span class="n">S1</span>Define the image and the viewer</h3>
+    <p>Mark the intended display area on the surface with tape. Measure its <b>width and height</b> in metres. Measure the <b>closest distance a user's eyes will normally be</b> from the surface — for an interactive UI this is arm's length (~0.5–0.7 m), not standing-back distance. Record the content class honestly: "video" and "dense interactive UI" produce very different requirements.</p>
+  </div>
+
+  <div class="step">
+    <h3><span class="n">S2</span>Measure ambient illuminance (the critical measurement)</h3>
+    <p><b>What you are measuring:</b> the light already falling <i>on the surface</i>, in lux. This — not room brightness in general — is what the projected image must compete with.</p>
+    <ul class="plain">
+      <li><b>Sensor placement:</b> hold the lux meter flat against the display surface, sensor dome facing <i>outward</i> (away from the wall, toward the room). You are measuring light arriving at the surface plane.</li>
+      <li><b>5-point pattern:</b> take readings at the four corners and centre of the taped image area. Record all five; the engine uses the worst (highest) point, because a UI must be legible everywhere.</li>
+      <li><b>Worst time of day:</b> repeat at the brightest realistic condition — midday sun through windows, all lights on, doors open. If you can only visit once, note it and inflate mentally. A reading taken at 7 pm with blinds closed will produce a spec that fails at noon.</li>
+      <li><b>All lighting states:</b> if lighting is variable (daylight, dimmers, task lights), record min and max. The controllability answer in Tab 2 matters as much as the number.</li>
+    </ul>
+    <div class="tip"><b>Calibration check:</b> typical values — dim lounge 50–100 lx · office 300–500 lx · clinical corridor 300–800 lx · retail 750–1500 lx · window-adjacent daylight 2,000–20,000 lx · direct sun 50,000+ lx. If your reading is wildly outside the expected band for the space, re-check sensor orientation.</div>
+    <div class="warn"><b>Common error:</b> pointing the sensor at the light fixture or the window. That measures the source, not the surface. Sensor flat on the surface, facing out.</div>
+  </div>
+
+  <div class="step">
+    <h3><span class="n">S3</span>Characterise the surface</h3>
+    <p><b>Reflectance (colour):</b> hold the white A4 sheet against the surface in even light. Fresh white paper ≈ 0.85 reflectance. Judge the surface against it: indistinguishable → white (0.85); noticeably duller but still light → light (0.60); clearly mid-tone (beige, grey, wood) → 0.35; dark paint, brick, charcoal → 0.15. Select the band in Tab 2.</p>
+    <p><b>Specularity (gloss) test:</b> shine the flashlight at the surface at ~45° and look for a mirror-like hotspot from your viewing position. A crisp bright reflection = gloss/semi-gloss (projection will show a glare hotspot and washed contrast at some angles). A soft diffuse glow = matte (good). Record finish.</p>
+    <p><b>Texture:</b> run a hand across it. Orange-peel and light texture are fine for video, degrading for small UI text. Heavy texture (brick, stucco) blurs pixel edges — note it.</p>
+  </div>
+
+  <div class="step">
+    <h3><span class="n">S4</span>Measure the geometry</h3>
+    <p>With the laser meter, measure the <b>available throw distance</b>: from every feasible mounting position (ceiling point, shelf, above/below the surface) to the <i>centre</i> of the image area. Record the best candidate. Note whether the projector can sit <b>square to the surface</b> (perpendicular, centred or within a lens-shift range) — if it must be skewed, say so in Tab 2; this changes the required optics.</p>
+    <p>Record whether <b>rear projection</b> is physically possible (access to the far side of glass or a cavity behind the surface), and whether <b>people will pass or stand between</b> any front mounting position and the surface during normal use.</p>
+  </div>
+
+  <div class="step">
+    <h3><span class="n">S5</span>Record operating conditions</h3>
+    <p>Daily runtime hours, dust class (office / clinical / industrial / semi-outdoor), acoustic sensitivity (is fan noise a problem at 1 m?), whether the install is permanent or must relocate, and available power/data at each mounting candidate. Photograph everything.</p>
+  </div>
+
+  <div class="tip"><b>Units note:</b> if your meter reads foot-candles, multiply by 10.76 to get lux before entry.</div>
+</section>
+
+<!-- ============ TAB 2: INPUT SHEET ============ -->
+<section class="tab" id="tab1">
+  <h2>Site input sheet</h2>
+  <p>All fields feed the decision engine live. Defaults model a typical office wall install — replace with survey data.</p>
+
+  <fieldset><legend>Content &amp; image</legend>
+    <div class="grid">
+      <div><label for="content">Content class</label>
+        <select id="content" onchange="calc()">
+          <option value="video">Video / ambient motion</option>
+          <option value="signage">Signage / bold graphics</option>
+          <option value="denseui" selected>Dense UI (text, controls)</option>
+          <option value="interactive">Interactive UI (touch / gesture)</option>
+        </select></div>
+      <div>
+        <label for="vsize">Diagonal / Vertical size</label>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <input id="vsize" type="number" step="0.05" min="0.01" oninput="unpackVSize()">
+          <select id="vsize_unit" data-prev="m" onchange="onUnitChange('vsize', this)" style="width: 72px; flex-shrink: 0; padding: 10px 4px;">
+            <option value="m" selected>m</option>
+            <option value="mm">mm</option>
+            <option value="in">in</option>
+            <option value="ft">ft</option>
+          </select>
+        </div>
+      </div>
+      <div><label for="orient">Orientation (16:9)</label>
+        <select id="orient" onchange="unpackVSize()">
+          <option value="landscape" selected>Landscape</option>
+          <option value="portrait">Portrait</option>
+        </select></div>
+      <div>
+        <label for="w">Image width</label>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <input id="w" type="number" step="0.05" min="0.01" value="1.6" oninput="packVSize(); calc()">
+          <select id="w_unit" data-prev="m" onchange="onUnitChange('w', this)" style="width: 72px; flex-shrink: 0; padding: 10px 4px;">
+            <option value="m" selected>m</option>
+            <option value="mm">mm</option>
+            <option value="in">in</option>
+            <option value="ft">ft</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label for="h">Image height</label>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <input id="h" type="number" step="0.05" min="0.01" value="0.9" oninput="packVSize(); calc()">
+          <select id="h_unit" data-prev="m" onchange="onUnitChange('h', this)" style="width: 72px; flex-shrink: 0; padding: 10px 4px;">
+            <option value="m" selected>m</option>
+            <option value="mm">mm</option>
+            <option value="in">in</option>
+            <option value="ft">ft</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label for="dist">Closest viewing distance</label>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <input id="dist" type="number" step="0.1" min="0.01" value="1.0" oninput="calc()">
+          <select id="dist_unit" data-prev="m" onchange="onUnitChange('dist', this)" style="width: 72px; flex-shrink: 0; padding: 10px 4px;">
+            <option value="m" selected>m</option>
+            <option value="mm">mm</option>
+            <option value="in">in</option>
+            <option value="ft">ft</option>
+          </select>
+        </div>
+        <div class="hint">Arm's length ≈ 24 in / 0.6 m</div>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset><legend>Light environment</legend>
+    <div class="grid">
+      <div><label for="lux">Worst-case illuminance on surface (lux)</label><input id="lux" type="number" step="10" min="0" value="400" oninput="calc()"><div class="hint">Highest of the 5-point readings, worst time of day</div></div>
+      <div><label for="ctrl">Lighting controllability</label>
+        <select id="ctrl" onchange="calc()">
+          <option value="full">Fully controllable (no daylight)</option>
+          <option value="partial" selected>Partially (dimmers / blinds)</option>
+          <option value="none">Uncontrolled daylight</option>
+        </select></div>
+    </div>
+  </fieldset>
+
+  <fieldset><legend>Surface</legend>
+    <div class="grid">
+      <div><label for="surf">Surface type</label>
+        <select id="surf" onchange="calc()">
+          <option value="wall" selected>Painted wall / board</option>
+          <option value="screen">Projection screen (existing/possible)</option>
+          <option value="glass">Glass / window</option>
+          <option value="floor">Floor</option>
+          <option value="counter">Counter / tabletop</option>
+        </select></div>
+      <div><label for="rho">Reflectance band (white-paper test)</label>
+        <select id="rho" onchange="calc()">
+          <option value="0.85" selected>White (≈0.85)</option>
+          <option value="0.60">Light (≈0.60)</option>
+          <option value="0.35">Mid-tone (≈0.35)</option>
+          <option value="0.15">Dark (≈0.15)</option>
+        </select></div>
+      <div><label for="finish">Finish (flashlight test)</label>
+        <select id="finish" onchange="calc()">
+          <option value="matte" selected>Matte (diffuse glow)</option>
+          <option value="gloss">Gloss / semi-gloss (hotspot)</option>
+          <option value="textured">Heavily textured</option>
+        </select></div>
+    </div>
+  </fieldset>
+
+  <fieldset><legend>Geometry &amp; occlusion</legend>
+    <div class="grid">
+      <div>
+        <label for="throw">Best available throw distance</label>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <input id="throw" type="number" step="0.1" min="0.01" value="2.4" oninput="calc()">
+          <select id="throw_unit" data-prev="m" onchange="onUnitChange('throw', this)" style="width: 72px; flex-shrink: 0; padding: 10px 4px;">
+            <option value="m" selected>m</option>
+            <option value="mm">mm</option>
+            <option value="in">in</option>
+            <option value="ft">ft</option>
+          </select>
+        </div>
+      </div>
+      <div><label for="ortho">Projector can sit square to surface?</label>
+        <select id="ortho" onchange="calc()"><option value="yes" selected>Yes / within lens-shift range</option><option value="no">No — must be skewed</option></select></div>
+      <div><label for="rear">Rear projection possible?</label>
+        <select id="rear" onchange="calc()"><option value="no" selected>No</option><option value="yes">Yes</option></select></div>
+      <div><label for="occ">People between projector &amp; surface?</label>
+        <select id="occ" onchange="calc()"><option value="no">Rarely / never</option><option value="yes" selected>Yes — during normal use</option></select></div>
+    </div>
+  </fieldset>
+
+  <fieldset><legend>Operating conditions</legend>
+    <div class="grid">
+      <div><label for="duty">Runtime (hours/day)</label><input id="duty" type="number" step="1" min="0" max="24" value="12" oninput="calc()"></div>
+      <div><label for="dust">Environment</label>
+        <select id="dust" onchange="calc()">
+          <option value="office">Office / home</option>
+          <option value="clinical" selected>Clinical / retail (cleaned, 24/7 traffic)</option>
+          <option value="industrial">Industrial / dusty</option>
+          <option value="semiout">Semi-outdoor</option>
+        </select></div>
+      <div><label for="perm">Permanence</label>
+        <select id="perm" onchange="calc()"><option value="fixed" selected>Fixed install</option><option value="mobile">Relocatable / mobile</option></select></div>
+      <div><label for="noise">Fan noise a problem at 1 m?</label>
+        <select id="noise" onchange="calc()"><option value="no" selected>No</option><option value="yes">Yes — quiet-critical</option></select></div>
+    </div>
+  </fieldset>
+
+  <button class="btn" onclick="showTab(2,document.querySelectorAll('nav button')[2])">Run decision engine →</button>
+</section>
+
+<!-- ============ TAB 3: DECISION ============ -->
+<section class="tab" id="tab2">
+  <div id="verdict" class="verdict"></div>
+
+  <h2>Light budget</h2>
+  <p style="font-size:13.5px;color:var(--ink-soft)">Required real (ANSI/ISO) lumens after headroom, positioned against projector market tiers. Beyond ~12,000 lm, projection cost and complexity usually lose to direct-view LED.</p>
+  <div class="gauge">
+    <div class="bar" id="gaugebar">
+      <div class="z" style="width:25%;background:#DCEAE6"></div>
+      <div class="z" style="width:25%;background:#F5E7C6"></div>
+      <div class="z" style="width:25%;background:#F3D3A2"></div>
+      <div class="z" style="width:25%;background:#EFC0B4"></div>
+      <div class="marker" id="marker" data-l="" style="left:0%"></div>
+    </div>
+    <div class="labels">
+      <span style="width:25%">0–3k · consumer/SMB</span>
+      <span style="width:25%">3–6k · pro install</span>
+      <span style="width:25%">6–12k · large venue</span>
+      <span style="width:25%">&gt;12k · projection impractical</span>
+    </div>
+  </div>
+
+  <h2 id="spectitle">Derived specification</h2>
+  <div class="spec" id="spec"></div>
+
+  <div id="projectorcentral-guide" style="display:none; margin:20px 0; border:1.5px dashed var(--teal); border-radius:8px; padding:18px; background:var(--teal-soft);">
+    <h3 style="margin-top:0; color:var(--teal); font-weight:600;">ProjectorCentral Search Integration Guide</h3>
+    <p style="font-size:13.5px; margin-bottom:12px;">Use the following settings on the <a href="https://www.projectorcentral.com/projectors.cfm" target="_blank" style="color:var(--teal); font-weight:bold; text-decoration:underline;">ProjectorCentral Find a Projector tool</a> to locate matching hardware. You can ignore any fields not listed below.</p>
+    <ul class="plain" id="pc-fields-list" style="font-size:13.5px; line-height:1.6;">
+    </ul>
+  </div>
+
+  <h2>Reasoning trail</h2>
+  <p style="font-size:13.5px;color:var(--ink-soft)">Every rule the engine evaluated. Amber = shaped the spec · red = vetoed projection or forced an alternative.</p>
+  <ul class="trail" id="trail"></ul>
+
+  <h2>Technology fit comparison</h2>
+  <div id="alts"></div>
+
+  <button class="btn" onclick="copyReport(this)">Copy report as text</button>
+  <p class="hint" style="margin-top:10px">Model notes: contrast = 1 + Φ/(E·A) for a diffuse surface (surface reflectance cancels in the ratio but sets the absolute-brightness floor). Contrast targets — video 8:1, signage 6:1, UI 15:1 vs ambient-reflected background — are engineering heuristics, not standards; adjust to taste. Headroom: ×1.25 spec-vs-real derating, ×1.2 source aging.</p>
+</section>
+</div>
+
+<script>
+function showTab(i,btn){
+  document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('show',j===i));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(i===2) calc();
+  window.scrollTo({top:0});
+}
+const $=id=>document.getElementById(id);
+const fmt=n=>n>=1000?(Math.round(n/100)*100).toLocaleString():Math.round(n);
+
+function toMeters(value, unit) {
+  if (unit === 'm') return value;
+  if (unit === 'mm') return value / 1000;
+  if (unit === 'in') return value * 0.0254;
+  if (unit === 'ft') return value * 0.3048;
+  return value;
+}
+
+function fromMeters(valueInMeters, unit) {
+  if (unit === 'm') return valueInMeters;
+  if (unit === 'mm') return valueInMeters * 1000;
+  if (unit === 'in') return valueInMeters / 0.0254;
+  if (unit === 'ft') return valueInMeters / 0.3048;
+  return valueInMeters;
+}
+
+function onUnitChange(inputId, selectEl) {
+  const prevUnit = selectEl.getAttribute('data-prev') || 'm';
+  const newUnit = selectEl.value;
+  selectEl.setAttribute('data-prev', newUnit);
+
+  const input = $(inputId);
+  let val = +input.value || 0;
+  if (val > 0) {
+    const valInMeters = toMeters(val, prevUnit);
+    const convertedVal = fromMeters(valInMeters, newUnit);
+    input.value = Number(convertedVal.toFixed(3));
+  }
+
+  if (inputId === 'w' || inputId === 'h') {
+    packVSize();
+  }
+  if (inputId === 'vsize') {
+    unpackVSize();
+  }
+  calc();
+}
+
+function unpackVSize(){
+  const vsize=+$('vsize').value;
+  if(!vsize||vsize<=0)return;
+  const orient=$('orient').value;
+  const factor=Math.sqrt(337);
+  const vsizeUnit=$('vsize_unit').value;
+  const wUnit=$('w_unit').value;
+  const hUnit=$('h_unit').value;
+
+  const vsizeInMeters=toMeters(vsize, vsizeUnit);
+  let wInMeters, hInMeters;
+  if(orient==='landscape'){
+    wInMeters=vsizeInMeters*16/factor;
+    hInMeters=vsizeInMeters*9/factor;
+  }else{
+    wInMeters=vsizeInMeters*9/factor;
+    hInMeters=vsizeInMeters*16/factor;
+  }
+
+  $('w').value=fromMeters(wInMeters, wUnit).toFixed(3);
+  $('h').value=fromMeters(hInMeters, hUnit).toFixed(3);
+  calc();
+}
+
+function packVSize(){
+  const w=+$('w').value||0;
+  const h=+$('h').value||0;
+  const wUnit=$('w_unit').value;
+  const hUnit=$('h_unit').value;
+  const vsizeUnit=$('vsize_unit').value;
+
+  const wInMeters=toMeters(w, wUnit);
+  const hInMeters=toMeters(h, hUnit);
+
+  if(wInMeters>0&&hInMeters>0){
+    const vsizeInMeters=Math.sqrt(wInMeters*wInMeters+hInMeters*hInMeters);
+    $('vsize').value=fromMeters(vsizeInMeters, vsizeUnit).toFixed(3);
+    $('orient').value=(wInMeters>=hInMeters)?'landscape':'portrait';
+  }
+}
+
+let lastReport='';
+
+function calc(){
+  // ---- gather ----
+  const content=$('content').value;
+  const W=toMeters(+$('w').value||1, $('w_unit').value);
+  const H=toMeters(+$('h').value||0.6, $('h_unit').value);
+  const A=W*H;
+  const D=toMeters(+$('dist').value||1, $('dist_unit').value);
+  const E=Math.max(+$('lux').value||0,1);
+  const ctrl=$('ctrl').value;
+  const surf=$('surf').value, rho=+$('rho').value, finish=$('finish').value;
+  const T=toMeters(+$('throw').value||1, $('throw_unit').value);
+  const ortho=$('ortho').value, rear=$('rear').value, occ=$('occ').value;
+  const duty=+$('duty').value||0, dust=$('dust').value, perm=$('perm').value, noise=$('noise').value;
+  const diag=Math.sqrt(W*W+H*H);
+  const isUI=(content==='denseui'||content==='interactive');
+
+  const trail=[]; // {t:title,m:math,cls:'fire'|'veto'|''}
+  const fire=(t,m)=>trail.push({t,m,cls:'fire'});
+  const veto=(t,m)=>trail.push({t,m,cls:'veto'});
+  const pass=(t,m)=>trail.push({t,m,cls:''});
+
+  // ---- photometrics ----
+  const Ctarget={video:8,signage:6,denseui:15,interactive:15}[content];
+  const Lmin={video:100,signage:200,denseui:150,interactive:150}[content]; // nits floor
+  const lumContrast=(Ctarget-1)*E*A;                    // Φ = (C-1)·E·A
+  const lumAbs=Lmin*Math.PI*A/rho;                      // absolute floor via reflectance
+  const lumOnScreen=Math.max(lumContrast,lumAbs);
+  const headroom=1.25*1.2;
+  const lumSpec=lumOnScreen*headroom;
+
+  const driver = lumContrast>lumAbs ? 'ambient contrast' : 'absolute brightness floor';
+  fire(`Photometric requirement: ${fmt(lumSpec)} real ANSI lumens`,
+    `Contrast path: (C−1)·E·A = ${Ctarget-1}×${E}×${A.toFixed(2)} = ${fmt(lumContrast)} lm · Absolute path: ${Lmin} nits·π·A/ρ = ${fmt(lumAbs)} lm · Binding constraint: ${driver} · ×1.5 headroom applied`);
+
+  // ---- geometry ----
+  const TR=T/W;
+  let trClass, trNote;
+  if(TR<0.4){trClass='Ultra-short-throw (UST)';trNote='TR '+TR.toFixed(2);}
+  else if(TR<1){trClass='Short-throw';trNote='TR '+TR.toFixed(2);}
+  else if(TR<=2.1){trClass='Standard-throw';trNote='TR '+TR.toFixed(2);}
+  else {trClass='Long-throw / zoom lens';trNote='TR '+TR.toFixed(2);}
+  fire(`Throw ratio ${TR.toFixed(2)} → ${trClass}`,`T/W = ${T}/${W}`);
+
+  let forceUST=false;
+  if(occ==='yes' && rear==='no' && (surf!=='floor')){
+    forceUST=true;
+    fire('Occlusion risk → UST mounting required','People pass between projector and surface; steep-angle/UST projection from above or below the image avoids user shadowing. Standard-throw front projection rejected.');
+  }
+  if(surf==='floor' && occ==='yes'){
+    fire('Floor + traffic → overhead mount, high mounting point','Mount directly above image area; users will still self-shadow at their feet — acceptable for signage, poor for precise UI targets.');
+  }
+  let needShift=false;
+  if(ortho==='no'){
+    if(isUI){needShift=true;fire('Skewed mounting + UI content → optical lens shift mandatory','Digital keystone resamples pixels and softens text/edges — disallowed for UI. Spec optical lens shift (or re-plan mounting).');}
+    else pass('Skewed mounting, non-UI content','Digital keystone acceptable for video/signage with minor quality loss.');
+  }
+
+  // ---- resolution ----
+  const acuity=D*0.00029; // 1 arcmin pixel size in m
+  const pxLimit=isUI?acuity:acuity*2;
+  const reqPx=Math.ceil(W/pxLimit);
+  let resRec;
+  if(reqPx<=1280)resRec='WXGA/1080p';
+  else if(reqPx<=1920)resRec='1080p';
+  else if(reqPx<=2560)resRec='WQHD/4K';
+  else if(reqPx<=3840)resRec='4K UHD';
+  else resRec='4K insufficient — edge-blend multi-unit or reduce image width';
+  fire(`Resolution: ≥${fmt(reqPx)} px horizontal → ${resRec}`,`Pixel ≤ ${(pxLimit*1000).toFixed(2)} mm at ${$('dist').value} ${$('dist_unit').value} viewing (${isUI?'1 arcmin, UI':'2 arcmin, video/signage'})`);
+
+  // ---- latency ----
+  if(content==='interactive'){fire('Interactive → input lag ≤ 20 ms','Projector display lag is one segment of the total gesture-to-photon budget; require a measured “game mode” ≤ 20 ms.');}
+
+  // ---- light source / enclosure ----
+  let src='Laser phosphor, sealed DLP optics';
+  let srcWhy=[];
+  if(duty>=8)srcWhy.push(`${duty} h/day duty`);
+  if(dust!=='office')srcWhy.push(dust+' environment (filterless sealed light path)');
+  if(perm==='mobile')srcWhy.push('relocatable (orientation-free, instant on/off)');
+  if(srcWhy.length===0){src='Laser preferred; lamp acceptable';srcWhy.push('light duty, clean environment');}
+  fire('Light source: '+src,srcWhy.join(' · '));
+  if(noise==='yes')fire('Quiet-critical → ≤ 28 dB rated, or remote mounting','Check dB spec in the actual picture mode used; eco modes are quieter but dimmer — re-check lumen budget in that mode.');
+  if(finish==='gloss')fire('Gloss surface → glare hotspot risk','Expect a specular hotspot at mirror-angle viewing positions. Prefer matte overpaint, a screen surface, or reposition projector off the primary sightline mirror angle.');
+  if(finish==='textured'&&isUI)fire('Heavy texture + UI → degraded text edges','Small text will visibly break on texture. Skim/repaint the area, apply a projection surface, or increase UI element sizes.');
+  if(rho<0.6)fire('Non-white surface → colour cast + brightness penalty already priced in','Absolute-brightness path used ρ='+rho+'. Also spec a projector/pipeline with full colour calibration to neutralise the surface tint.');
+
+  // ---- alternative / veto logic ----
+  let primary='projector', primaryTitle='', primaryWhy='';
+  const alts=[];
+
+  // Glass
+  if(surf==='glass'){
+    if(rear==='yes'){
+      fire('Glass + rear access → rear-projection film + projector','Front projection cannot form an image on transparent glass. Rear-pro film (grey/dark contrast film) + short-throw projector behind preserves projector economics and full resolution.');
+      primaryTitle='Rear-projection film + short-throw laser projector';
+      primaryWhy='Glass can carry a projected image only via an applied diffusion film; with rear access this keeps full resolution and avoids occlusion entirely.';
+    } else {
+      veto('Glass + no rear access → projection vetoed','No diffuse surface for the image to form on from the front.');
+      primary='alt';
+      if(isUI){
+        primaryTitle='Transparent display is a poor UI medium here — reconsider';
+        primaryWhy='Adhesive LED film pitch (≥P4, typically P6–P10) cannot render dense UI at '+$('dist').value+' '+$('dist_unit').value+'; transparent OLED is dim for '+E+' lx. Honest options: mount a conventional panel on/behind the glass, or apply rear-pro film if rear access can be created.';
+      } else {
+        const pitchRec=Math.max(2,Math.min(20,Math.round(D)));
+        primaryTitle='Transparent LED film (adhesive), ~P'+pitchRec;
+        primaryWhy='Glass-native, daylight-bright (2,000–5,000+ nits), keeps transparency. Rule of thumb: pitch in mm ≈ minimum viewing distance in m → P'+pitchRec+' for '+$('dist').value+' '+$('dist_unit').value+'. Content must be bold/high-contrast; note film is non-reusable once removed.';
+      }
+    }
+  }
+
+  // Lumen ceiling
+  if(primary==='projector' && lumSpec>12000){
+    veto('Required lumens '+fmt(lumSpec)+' > 12,000 → projection impractical',
+      'Fixture cost, power, heat and noise at this class typically exceed direct-view LED for the same image area. Root cause: '+E+' lx ambient on '+A.toFixed(1)+' m².');
+    primary='alt';
+    primaryTitle=diag<=2.4?'Commercial LCD panel ('+Math.round(diag/0.0254)+'″ class)':'Fine-pitch direct-view LED wall';
+    primaryWhy=diag<=2.4
+      ?'At '+$('vsize').value+' '+$('vsize_unit').value+' diagonal a commercial 500–700 nit panel beats any projector on contrast in '+E+' lx ambient, at a fraction of the cost, with zero optical-path maintenance.'
+      :'Image exceeds single-panel sizes; modular LED tiles deliver emissive brightness immune to ambient light. Pitch ≈ viewing distance rule: ~P'+Math.max(1,Math.round(D))+'.';
+  }
+
+  // Uncontrolled daylight + UI
+  if(primary==='projector' && ctrl==='none' && isUI){
+    veto('Uncontrolled daylight + UI → direct-view strongly preferred',
+      'Projection contrast collapses with ambient; a UI must stay legible at the daily maximum, and today\'s worst-case reading may not be the annual worst case. Emissive display removes the entire risk class.');
+    primary='alt';
+    primaryTitle=diag<=2.4?'Commercial LCD panel ('+Math.round(diag/0.0254)+'″ class)':'Fine-pitch LED wall';
+    primaryWhy='UI legibility must not depend on weather. An emissive display is indifferent to ambient light; projection here creates a permanent operational fragility.';
+  }
+
+  // Panel-competitive advisory (not a veto)
+  if(primary==='projector' && diag<=2.2 && perm==='fixed' && E>300 && (surf==='wall'||surf==='counter')){
+    fire('Value check: a commercial LCD panel is likely cheaper and better here',
+      $('vsize').value+' '+$('vsize_unit').value+' diagonal fits standard panel sizes; at '+E+' lx a 500-nit panel outperforms a '+fmt(lumSpec)+' lm projector on contrast with no maintenance. Choose projection only if surface-flexibility or footprint genuinely requires it.');
+  }
+
+  // ALR advisory
+  if(primary==='projector' && ctrl!=='full' && surf!=='glass' && E>=250 && lumSpec<=12000 && surf!=='floor'){
+    fire('Ambient mitigation: ALR screen recommended',
+      'An ambient-light-rejecting screen surface rejects off-axis room light and can cut the effective lumen requirement roughly in half — at the cost of surface-agnosticism (UST-specific ALR needed if UST).');
+  }
+
+  if(primary==='projector' && primaryTitle===''){
+    primaryTitle=(forceUST?'UST ':'')+ (trClass.includes('UST')||forceUST?'ultra-short-throw ':'')+'laser projector — see derived spec';
+    primaryTitle='Projector — '+(forceUST?'ultra-short-throw (UST)':trClass.toLowerCase())+', laser';
+    primaryWhy='Projection is feasible and preserves surface flexibility. The specification below is the minimum to meet the measured photometrics and geometry.';
+  }
+
+  // ---- verdict render ----
+  const v=$('verdict');
+  const tag= primary==='projector'?'Primary recommendation · projection':'Primary recommendation · alternative technology';
+  v.innerHTML='<span class="tag">'+tag+'</span><h2>'+primaryTitle+'</h2><p class="why">'+primaryWhy+'</p>';
+
+  // ---- gauge ----
+  const pct=Math.min(100,(lumSpec/16000)*100);
+  const mk=$('marker');
+  mk.style.left='calc('+pct+'% - 1px)';
+  mk.setAttribute('data-l',fmt(lumSpec)+' lm');
+
+  // ---- spec ----
+  const spec=$('spec');
+  if(primary==='projector'){
+    $('spectitle').textContent='Derived projector specification (minimums)';
+    spec.innerHTML=
+      cell('Brightness','≥ '+fmt(lumSpec)+' ANSI lm','Real ANSI/ISO rating only — ignore marketing “LED lumens”. Binding constraint: '+driver+'.')+
+      cell('Throw',(forceUST?'UST (TR < 0.4)':trClass),'Available throw '+$('throw').value+' '+$('throw_unit').value+' for '+$('w').value+' '+$('w_unit').value+' width'+(forceUST?' · forced by occlusion':''))+
+      cell('Resolution',resRec,fmt(reqPx)+' px horizontal minimum at '+$('dist').value+' '+$('dist_unit').value+' viewing')+
+      cell('Light source',src.split(',')[0],'Sealed optical path'+(dust!=='office'?' (dust class: '+dust+')':''))+
+      cell('Optics',needShift?'Optical lens shift required':'Fixed lens acceptable',needShift?'Digital keystone disallowed for UI content':'Square mounting confirmed')+
+      (content==='interactive'?cell('Input lag','≤ 20 ms','Measured, in the picture mode actually used'):'')+
+      (noise==='yes'?cell('Acoustics','≤ 28 dB','In full-brightness mode, not eco'):'');
+  } else {
+    $('spectitle').textContent='Derived display requirement';
+    spec.innerHTML=
+      cell('Technology',primaryTitle.split('—')[0].split('(')[0].trim(),'')+
+      cell('Image area',$('w').value+' '+$('w_unit').value+' × '+$('h').value+' '+$('h_unit').value+' ('+$('vsize').value+' '+$('vsize_unit').value+' diag)','')+
+      cell('Ambient to beat',E+' lx worst case','Controllability: '+ctrl)+
+      (surf==='glass'&&!isUI&&rear==='no'?cell('Pixel pitch','≈ P'+Math.max(2,Math.min(20,Math.round(D))),'Pitch mm ≈ viewing distance m'):'')+
+      cell('Equivalent projector demand',fmt(lumSpec)+' lm','Shown for reference — this is why projection was rejected');
+  }
+
+  // ---- ProjectorCentral Search Integration Guide ----
+  const pcGuide = $('projectorcentral-guide');
+  let pcGuideText = '';
+  if (primary === 'projector') {
+    const T_ft = (T * 3.28084).toFixed(1);
+    const diag_in = (diag * 39.3701).toFixed(0);
+    const brRange = lumSpec <= 2000 ? '1000-2000' : (lumSpec <= 4000 ? '2000-4000' : (lumSpec <= 7000 ? '4000-7000' : (lumSpec <= 10000 ? '7000-10000' : '10000-15000')));
+    
+    let checklistHtml = 
+      `<li><b>Resolution:</b> Select <code>` + resRec + `</code> class (vertical sharpness requirement: ≥` + fmt(reqPx) + ` horizontal px)</li>` +
+      `<li><b>Brightness:</b> Select <code>` + brRange + ` lumens</code> (minimum required: <b>` + fmt(lumSpec) + ` ANSI lumens</b>)</li>` +
+      `<li><b>Aspect Ratio:</b> Select <code>16:9</code> (standard widescreen aspect ratio used in site calculations)</li>` +
+      (src.includes('Laser') ? `<li><b>Lamp Type:</b> Select <code>Laser</code> or <code>All Solid State</code> (matches seal/dust protection and life)</li>` : '') +
+      (forceUST ? `<li><b>Features:</b> Check <code>Ultra Short Throw</code> (avoids shadowing in traffic areas)</li>` : '') +
+      (needShift ? `<li><b>Features:</b> Check <code>Vert Lens Shift</code> and <code>Horiz Lens Shift</code> (disallow digital keystone for text/UI)</li>` : '') +
+      (content === 'interactive' ? `<li><b>Features:</b> Check <code>Input Lag &lt; 30ms</code> (for interactive gesture/touch UI)</li>` : '') +
+      (duty >= 12 ? `<li><b>Features:</b> Check <code>24/7 Duty Cycle</code> (matches high runtime requirements)</li>` : '') +
+      `<li><b>Throw Distance:</b> Enter <code>` + T_ft + ` feet</code> (your input: ` + $('throw').value + ` ` + $('throw_unit').value + `)</li>` +
+      `<li><b>Screen Size:</b> Enter <code>` + diag_in + ` inches</code> <b>Diagonal</b> (your input: ` + $('vsize').value + ` ` + $('vsize_unit').value + `)</li>` +
+      `<li><i>Note: All other fields on the form (such as Price, Zoom Range, Audio Power, Weight, or Connections) do not affect this visual spec and can be ignored/left default unless specifically constrained by site budgets or source inputs.</i></li>`;
+    
+    $('pc-fields-list').innerHTML = checklistHtml;
+    pcGuide.style.display = 'block';
+
+    pcGuideText = '\n\nPROJECTORCENTRAL SEARCH PARAMETERS (https://www.projectorcentral.com/projectors.cfm):\n' +
+      '- Resolution: Select ' + resRec + ' class\n' +
+      '- Brightness: Select ' + brRange + ' lumens (Minimum: ' + fmt(lumSpec) + ' lm)\n' +
+      '- Aspect Ratio: Select 16:9\n' +
+      (src.includes('Laser') ? '- Lamp Type: Select Laser or All Solid State\n' : '') +
+      (forceUST ? '- Features: Check "Ultra Short Throw"\n' : '') +
+      (needShift ? '- Features: Check "Vert Lens Shift" & "Horiz Lens Shift"\n' : '') +
+      (content === 'interactive' ? '- Features: Check "Input Lag < 30ms"\n' : '') +
+      (duty >= 12 ? '- Features: Check "24/7 Duty Cycle"\n' : '') +
+      '- Throw Distance: Enter ' + T_ft + ' feet\n' +
+      '- Screen Size: Enter ' + diag_in + ' inches Diagonal\n' +
+      '(Note: Other fields on the website can be ignored if they do not affect your specific environment constraints.)';
+  } else {
+    pcGuide.style.display = 'none';
+  }
+
+  // ---- trail ----
+  $('trail').innerHTML=trail.map(x=>'<li class="'+x.cls+'"><b>'+x.t+'</b><span class="m">'+x.m+'</span></li>').join('');
+
+  // ---- alternatives table ----
+  const altList=[];
+  function rate(name,fit,note){altList.push({name,fit,note});}
+  // projector
+  if(surf==='glass'&&rear==='no')rate('Projector (front)','poor','No diffuse surface on glass — cannot form an image.');
+  else if(lumSpec>12000)rate('Projector','poor',fmt(lumSpec)+' lm requirement exceeds practical/economic class.');
+  else if(ctrl==='none'&&isUI)rate('Projector','cond','Feasible on paper ('+fmt(lumSpec)+' lm) but UI legibility hostage to daylight — operational risk.');
+  else rate('Projector'+(forceUST?' (UST)':''),'good','Meets spec at '+fmt(lumSpec)+' lm; only technology preserving arbitrary-surface flexibility.');
+  // LCD
+  if(diag<=2.4&&surf!=='floor')rate('Commercial LCD panel','good','Diagonal fits panel sizes; emissive, ambient-immune, dense-UI-native, lowest TCO.');
+  else if(surf==='floor')rate('Commercial LCD panel','poor','Not load-rated for floor traffic.');
+  else rate('Commercial LCD panel','cond','Image exceeds single-panel size — video-wall bezels compromise UI continuity.');
+  // LED tiles
+  rate('Fine-pitch LED (microLED tiles)','cond','Any size/shape, daylight-proof'+(surf==='floor'?', floor-rated variants exist':'')+'; premium cost, needs structure and power. Best when lumens or size veto projection.');
+  // LED film
+  if(surf==='glass')rate('Transparent LED film',isUI?'poor':'good',isUI?'Pitch ≥P4 cannot carry dense UI at '+D+' m.':'Glass-native, sunlight-bright signage; pitch ≈ P'+Math.max(2,Math.min(20,Math.round(D)))+' for '+D+' m viewing. Permanent (non-reusable adhesive).');
+  else rate('Transparent LED film','poor','Glass-only medium — not applicable to '+surf+'.');
+  // rear pro
+  if(rear==='yes')rate('Rear projection (film/screen)','good','Eliminates occlusion entirely; full resolution; needs the measured rear cavity depth vs throw ratio.');
+  $('alts').innerHTML=altList.map(a=>'<div class="alt"><h3>'+a.name+'<span class="fit '+a.fit+'">'+({good:'good fit',cond:'conditional',poor:'poor fit'}[a.fit])+'</span></h3><p>'+a.note+'</p></div>').join('');
+
+  // ---- text report ----
+  lastReport='SURFACE DISPLAY SELECTOR — REPORT\n'+
+    'Content: '+content+' | Image: '+$('w').value+' '+$('w_unit').value+' x '+$('h').value+' '+$('h_unit').value+' ('+A.toFixed(2)+' m2) | Min viewing: '+$('dist').value+' '+$('dist_unit').value+'\n'+
+    'Ambient: '+E+' lx worst-case ('+ctrl+') | Surface: '+surf+', rho='+rho+', '+finish+'\n'+
+    'Throw: '+$('throw').value+' '+$('throw_unit').value+' (TR '+TR.toFixed(2)+') | Square: '+ortho+' | Rear: '+rear+' | Occlusion: '+occ+'\n'+
+    'Duty: '+duty+' h/d | Env: '+dust+' | '+perm+'\n\n'+
+    'VERDICT: '+primaryTitle+'\n'+primaryWhy+'\n\n'+
+    'Required real lumens (if projecting): '+fmt(lumSpec)+' ANSI lm ('+driver+')\n'+
+    'Resolution: '+resRec+' ('+fmt(reqPx)+' px horiz)\n\nREASONING:\n'+
+    trail.map(x=>'- '+x.t+' — '+x.m).join('\n') +
+    pcGuideText;
+}
+
+function cell(k,v,s){return '<div><b>'+k+'</b><span>'+v+'</span>'+(s?'<small>'+s+'</small>':'')+'</div>';}
+
+function copyReport(b){
+  navigator.clipboard.writeText(lastReport).then(()=>{
+    b.textContent='Copied ✓';setTimeout(()=>b.textContent='Copy report as text',1600);
+  });
+}
+packVSize();
+calc();
+</script>
+</body>
+</html>
